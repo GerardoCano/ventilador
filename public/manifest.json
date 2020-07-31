@@ -1,0 +1,25 @@
+{
+    "short_name": "VNTIoT",
+    "name": "Ventilador IoT",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#2b3b44",
+    "theme_color": "#2b3b44",
+    "icons": [
+      {
+        "src": "img/icono-2048.png",
+        "sizes": "2048x2048",
+        "type": "image/png"
+      },
+      {
+        "src": "img/icono-1024.png",
+        "sizes": "1024x1024",
+        "type": "image/png"
+      },
+      {
+        "src": "img/icono-256.png",
+        "sizes": "256x256",
+        "type": "image/png"
+      }
+    ]
+  }

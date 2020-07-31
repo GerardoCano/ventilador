@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ventilador</title>
+  <script>
+    /* invoca a registraServiceWorker instalar la aplicación en el caché del
+     * navegador. No se espera a que termine el registro. */
+    registraServiceWorker();
+    /** Registra un service worker para instalar la aplicación en el
+     * caché del navegador. La palabra reservada async indica que no espera
+     * a que termine y libera el registro de activación que lo llamó. */
+    async function registraServiceWorker() {
+      if ("serviceWorker" in navigator) {
+        try {
+          /* Registra el service worker y espera que termine. El service
+           * worker debe estar en la carpeta public. La palabra await indica
+           * que espera a que termine y solo puede usarse en una función
+           * async. */
+          const registro = await navigator.serviceWorker.register("sw.js");
+          // Registro correcto y se muestra en la consola.
+          console.log("Service Worker registrado.");
+          console.log(registro);
+        } catch (e) {
+          // Hubo un error en el registro.
+          muestraError(e);
+        }
+      }
+    }
+    /** Procesa una excepción y muestra un mensaje de error.
+     * @param {Error} e descripción del error. */
+    function muestraError(e) {
+      console.log(e);
+      alert(e.message);
+    }
+  </script>
+  
+  
+    <!-- Ícono para la página web. Debe ponerse en la raíz de la página. -->
+    <link rel="icon" sizes="32x32" href="favicon.ico">
+
+    <!-- Color de la barra de navegación de Chrome en dispositivos móviles. -->
+    <meta name="theme-color" content="#2b3b44">
+
+    <!-- Configuración de la PWA: Chrome y Edge. -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Configuración para Web Clip en Safari. -->
+    <meta name="apple-mobile-web-app-title" content="VNTIot">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="img/icono-2048.png">
+    <link rel="apple-touch-icon" sizes="256x256" href="img/icono-256.png">
+    <link rel="apple-touch-icon" sizes="1024x1024" href="img/icono-1024.png">
+    <link rel="apple-touch-icon" sizes="2048x2048" href="img/icono-2048.png">
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- update the version number as needed -->
+  <script src="/__/firebase/7.17.1/firebase-app.js"></script>
+  <!-- include only the Firebase features as you need -->
+  <!-- Agrega el manejo de bases de datos. -->
+  <script src="/__/firebase/7.17.1/firebase-firestore.js"></script>
+  <!-- initialize the SDK after all desired features are loaded -->
+  <script src="/__/firebase/init.js"></script>
+
+  <script type="module" src="cmp/mi-footer.js"></script>
+  <link rel="stylesheet" href="css/estilo.css" type="text/css" media="screen">
+  
+  <script>
+    const firestore = firebase.firestore();
+    const ID_PROYECTO = "ventilador-cf775";
+    const ENTIDAD_VENTILADOR = "VENTILADOR";
+    const ENTIDAD_AUTOMATIZADO = "AUTOMATIZADO";
+    const ENTIDAD_VELOCIDAD = "VELOCIDAD";
+    const ENTIDAD_TEMPERATURA = "TEMPERATURA";
+    const ID = "iot1";
+    const URL_VENTILADOR = `https://firestore.googleapis.com/v1/projects/${
+      ID_PROYECTO}/databases/(default)/documents/${ENTIDAD_VENTILADOR}/${ID}/`;
+    const URL_AUTOMATIZADO = `https://firestore.googleapis.com/v1/projects/${
+      ID_PROYECTO}/databases/(default)/documents/${ENTIDAD_AUTOMATIZADO}/${ID}`;
+    const URL_VELOCIDAD = `https://firestore.googleapis.com/v1/projects/${
+      ID_PROYECTO}/databases/(default)/documents/${ENTIDAD_VELOCIDAD}/${ID}`;
+    const URL_TEMPERATURA = `https://firestore.googleapis.com/v1/projects/${
+      ID_PROYECTO}/databases/(default)/documents/${ENTIDAD_TEMPERATURA}/${ID}`;
+    const INTERVALO_EN_MILIS = 3000;
+    const MÉTODO_AGREGA = "POST";
+    const MÉTODO_CAMBIOS = "PATCH";
+    const HEADERS_JSON = {
+      "Content-Type": "application/json"
+    };
+    function procesaError(e) {
+      console.log(e);
+      alert(e.message);
+    }
+  </script>
+</head>
+
+<body>
+  <header>
+    <h1>Ventilador</h1>
+    <button>
+      <input id=mpAutomatizado type="checkbox" onclick="automatizadoModificado(); verificarTemperatura();"
+        class="switch_1"><label for="mpAutomatizado"
+        style="color: whitesmoke; padding: 0.5rem; font-size: 15px;">Auto</label>
+    </button>
+    <button>
+      <input id=mpVentilador type="checkbox" onclick="ventiladorModificado();" class="switch_1"><label
+        for="mpAutomatizado" style="color: whitesmoke; padding: 0.5rem; font-size: 15px;">Prender</label>
+    </button>
+  </header>
+  <div class="container">
+    <section id=iot>
+      <div id="temperatura" hidden>
+        <p><label>Temperatura: <b><output id="iotMedidor"></output></b>C°</label></p>
+        <p>
+          <label>
+            -10 C°<input id="iotTemperatura" type="range" min="-10" max="45" step="5" list="marcas"
+              onchange="temperaturaModificada(); verificarTemperatura();" class="slider">45 C°
+
+            <datalist id="marcas">
+              <option value="-10" label="-10 C°"></option>
+              <option value="-5"></option>
+              <option value="0" label="0 C°"></option>
+              <option value="5"></option>
+              <option value="10" label="10 C°"></option>
+              <option value="15"></option>
+              <option value="20" label="20 C°"></option>
+              <option value="25"></option>
+              <option value="30" label="30 C°"></option>
+              <option value="35"></option>
+              <option value="40" label="40 C°"></option>
+              <option value="45"></option>
+            </datalist>
+          </label>
+        </p>
+      </div>
+      <div id="velocidad">
+
+        <p>
+          <label>
+            Nivel 1<input id="iotVelocidad" type="range" min="1" max="3" step="1" list="niveles"
+              onchange="velocidadModificada();" class="slider">Nivel 3
+
+            <datalist id="niveles">
+              <option value="1" label="1"></option>
+              <option value="2" label="2"></option>
+              <option value="3" label="3"></option>
+            </datalist>
+          </label>
+        </p>
+      </div>
+      <p><label>Automatizado: <b><output id="iotAutomatizado"></output></b></label></p>
+      <p><label>Ventilador: <b><output id="iotVentilador"></output></b></label></p>
+      <p><output id="iotError"></output></p>
+    </section>
+    <script>
+      setInterval(actualizaIot, INTERVALO_EN_MILIS);
+      iniciaTemperatura();
+      iniciaVelocidad();
+      async function actualizaIot() {
+        try {
+          const resp = await fetch(URL_AUTOMATIZADO);
+          if (resp.ok) {
+            const json = await resp.json();
+            iotAutomatizado.value = json.fields.valor && json.fields.valor.booleanValue ?
+              "Encendido" : "Apagado";
+          } else {
+            iotAutomatizado.value = "Apagado";
+            console.log(resp.statusText);
+          }
+        } catch (e) {
+          console.log(e);
+          iotError.value = e.message;
+        }
+
+        try {
+          const resp = await fetch(URL_VENTILADOR);
+          if (resp.ok) {
+            const json = await resp.json();
+            iotVentilador.value = json.fields.valor && json.fields.valor.booleanValue ?
+              "Encendido" : "Apagado";
+          } else {
+            iotVentilador.value = "Apagado";
+            console.log(resp.statusText);
+          }
+        } catch (e) {
+          console.log(e);
+          iotError.value = e.message;
+        }
+      }
+      async function iniciaTemperatura() {
+        try {
+          const resp = await fetch(URL_TEMPERATURA);
+          if (resp.ok) {
+            const json = await resp.json();
+            iotTemperatura.value = json.fields.valor;
+            temperaturaModificada();
+            verificarTemperatura();
+          } else {
+            iotTemperatura.value = 0;
+            console.log(resp.statusText);
+          }
+        } catch (e) {
+          console.log(e);
+          iotError.value = e.message;
+        }
+      }
+      async function iniciaVelocidad() {
+        try {
+          const resp = await fetch(URL_VELOCIDAD);
+          if (resp.ok) {
+            const json = await resp.json();
+            iotVelocidad.value = json.fields.valor;
+          } else {
+            iotVelocidad.value = 1;
+            console.log(resp.statusText);
+          }
+        } catch (e) {
+          console.log(e);
+          iotError.value = e.message;
+        }
+      }
+      async function velocidadModificada() {
+        try {
+          var data = {
+            fields: { valor: { integerValue: iotVelocidad.value } }
+          };
+          const resp = await fetch(URL_VELOCIDAD, {
+            method: MÉTODO_CAMBIOS,
+            body: JSON.stringify(data),
+            headers: HEADERS_JSON,
+          });
+          if (!resp.ok) {
+            throw new Error(resp.message);
+          }
+        } catch (e) {
+          console.log(e);
+          iotError.value = e.message;
+        }
+      }
+      async function temperaturaModificada() {
+        try {
+          var data = {
+            fields: { valor: { integerValue: iotTemperatura.value } }
+          };
+          const resp = await fetch(URL_TEMPERATURA, {
+            method: MÉTODO_CAMBIOS,
+            body: JSON.stringify(data),
+            headers: HEADERS_JSON,
+          });
+          if (!resp.ok) {
+            throw new Error(resp.message);
+          }
+        } catch (e) {
+          console.log(e);
+          iotError.value = e.message;
+        }
+      }
+    </script>
+    <section id=mp>
+      <img src=img/ventiladorOn.gif width="250px" id=ventiladorOn hidden class="encendida">
+      <img src=img/ventiladorOff.png width="250px" id=ventiladorOff hidden class="apagada">
+      <p><meter id=mpTemperatura min="-10" max="45"></meter>Grados C°</p>
+
+    </section>
+    </div>
+    <mi-footer class="footer"></mi-footer>
+    <script>
+      actualizaMp();
+      deshabilitaVentilador();
+      async function actualizaMp() {
+
+        firestore.collection(ENTIDAD_TEMPERATURA).doc(ID).onSnapshot(
+          doc => {
+            if (doc.exists) {
+              mpTemperatura.value = doc.data().valor || 0;
+              iotTemperatura.value = doc.data().valor || 0;
+              iotMedidor.value = doc.data().valor || 0;
+            } else {
+              mpTemperatura.value = 0;
+            }
+          },
+          e => {
+            procesaError(e);
+            // muestraLuz();
+          }
+        );
+
+        firestore.collection(ENTIDAD_VENTILADOR).doc(ID).onSnapshot(
+          doc => {
+            if (doc.exists) {
+              mpVentilador.checked = doc.data().valor;
+              if (doc.data().valor) { ventiladorOn.hidden = false; } else { ventiladorOn.hidden = true; }
+              ventiladorOff.hidden = doc.data().valor;
+            } else {
+            }
+          },
+          e => {
+            procesaError(e);
+            // muestraLuz();
+          }
+        );
+
+        const docAutomatizado = await firestore.collection(ENTIDAD_AUTOMATIZADO).doc(ID).get();
+        mpAutomatizado.checked = docAutomatizado.exists && Boolean(docAutomatizado.data().valor);
+
+        const docVentilador = await firestore.collection(ENTIDAD_VENTILADOR).doc(ID).get();
+        mpVentilador.checked = docVentilador.exists && Boolean(docVentilador.data().valor);
+        mpVentilador.hidden = docVentilador.exists && Boolean(docVentilador.data().habilitado);
+
+
+
+      }
+
+      async function deshabilitaVentilador() {
+        if (document.getElementById("mpAutomatizado").checked == true) {
+          temperaturaModificada();
+          document.getElementById("mpVentilador").checked = false;
+          document.getElementById("mpVentilador").hidden = true;
+          document.getElementById("temperatura").hidden = false;
+          document.getElementById("iotVelocidad").disabled = true;
+        } else {
+          temperaturaModificada();
+          document.getElementById("mpVentilador").hidden = false;
+          document.getElementById("temperatura").hidden = true;
+          document.getElementById("iotVelocidad").disabled = false;
+        }
+
+        try {
+          await firestore.collection(ENTIDAD_VENTILADOR).doc(ID).set({
+            valor: mpVentilador.checked,
+            deshabilitado: mpVentilador.hidden
+          });
+        } catch (e) {
+          procesaError(e);
+        }
+      }
+
+      async function verificarTemperatura() {
+        firestore.collection(ENTIDAD_TEMPERATURA).doc(ID).onSnapshot(
+          doc => {
+            if (doc.exists) {
+              var temp = doc.data().valor;
+
+              if (temp > 40) {
+                document.getElementById("mpVentilador").checked = true;
+                ventiladorModificado();
+                iotVelocidad.value = 3;
+              } else if (temp > 30) {
+                document.getElementById("mpVentilador").checked = true;
+                ventiladorModificado();
+                iotVelocidad.value = 2;
+              } else if (temp > 27) {
+                document.getElementById("mpVentilador").checked = true;
+                ventiladorModificado();
+                iotVelocidad.value = 1;
+              } else {
+                document.getElementById("mpVentilador").checked = false;
+                ventiladorModificado();
+                iotVelocidad.value = 1;
+              }
+              if (temp > 25) {
+                setTimeout(bajarVelocidad, 1000);
+              }
+            }
+          },
+          e => {
+            procesaError(e);
+            // muestraLuz();
+          }
+        );
+      }
+
+      async function automatizadoModificado() {
+        try {
+          deshabilitaVentilador();
+          await firestore.collection(ENTIDAD_AUTOMATIZADO).doc(ID).set({
+            valor: mpAutomatizado.checked
+          });
+        } catch (e) {
+          procesaError(e);
+        }
+      }
+      async function ventiladorModificado() {
+        try {
+          await firestore.collection(ENTIDAD_VENTILADOR).doc(ID).set({
+            valor: mpVentilador.checked,
+            deshabilitado: mpVentilador.hidden
+          });
+        } catch (e) {
+          procesaError(e);
+        }
+      }
+
+      async function bajarVelocidad() {
+        firestore.collection(ENTIDAD_TEMPERATURA).doc(ID).onSnapshot(
+          doc => {
+            if (doc.exists) {
+              if (doc.data().valor > 25) {
+                setInterval(iotTemperatura.value = doc.data().valor - 5, 1000);
+                temperaturaModificada();
+                verificarTemperatura();
+              }
+            }
+          },
+          e => {
+            procesaError(e);
+            // muestraLuz();
+          }
+        );
+      }
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+    </script>
+</body>
+</html>
