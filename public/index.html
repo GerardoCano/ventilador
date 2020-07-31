@@ -114,7 +114,7 @@
   <div class="container">
     <section id=iot>
       <div id="temperatura" hidden>
-        <p><label>Temperatura: <b><output id="iotMedidor"></output></b>C°</label></p>
+        <p><label>Temperatura: <b><output id="iotMedidor"></output></b>C°</label></p><br>
         <p>
           <label>
             -10 C°<input id="iotTemperatura" type="range" min="-10" max="45" step="5" list="marcas"
@@ -135,7 +135,7 @@
               <option value="45"></option>
             </datalist>
           </label>
-        </p>
+        </p><br>
       </div>
       <div id="velocidad">
 
@@ -150,10 +150,10 @@
               <option value="3" label="3"></option>
             </datalist>
           </label>
-        </p>
+        </p><br>
       </div>
-      <p><label>Automatizado: <b><output id="iotAutomatizado"></output></b></label></p>
-      <p><label>Ventilador: <b><output id="iotVentilador"></output></b></label></p>
+      <p><label>Automatizado: <b><output id="iotAutomatizado"></output></b></label></p><br>
+      <p><label>Ventilador: <b><output id="iotVentilador"></output></b></label></p><br>
       <p><output id="iotError"></output></p>
     </section>
     <script>
@@ -263,7 +263,7 @@
     <section id=mp>
       <img src=img/ventiladorOn.gif width="250px" id=ventiladorOn hidden class="encendida">
       <img src=img/ventiladorOff.png width="250px" id=ventiladorOff hidden class="apagada">
-      <p><meter id=mpTemperatura min="-10" max="45"></meter>Grados C°</p>
+      <br><p><meter id=mpTemperatura min="-10" max="45"></meter>Grados C°</p>
 
     </section>
     </div>
